@@ -19,3 +19,4 @@
 After signup, run in Supabase SQL Editor:
 ```sql
 UPDATE public.profiles SET role = 'admin' WHERE email = 'your@email.com';
+testing 123
