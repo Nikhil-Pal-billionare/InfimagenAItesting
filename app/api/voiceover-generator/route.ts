@@ -39,14 +39,14 @@ export async function POST(req: Request) {
     // Refund on failure
     try {
   await supabaseAdmin.rpc("deduct_credits", {
-    p_user_id: userId,
-    p_amount: -CREDIT_COSTS.THUMBNAIL_GENERATION,
-    p_reason: "refund_thumbnail_failed",
+    p_user_id: user.id,
+    p_amount: -cost,
+    p_reason: "refund_tts_failed",
     p_meta: {}
   });
 } catch (refundError) {
-  console.error("Thumbnail refund failed:", refundError);
-    }
+  console.error("TTS refund failed:", refundError);
+  }
     return NextResponse.json({ error: "TTS generation failed" }, { status: 500 });
   }
 
