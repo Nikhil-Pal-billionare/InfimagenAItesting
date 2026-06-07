@@ -68,10 +68,14 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     if (userId && deducted) {
-      await supabaseAdmin.rpc("deduct_credits", {
-        p_user_id: userId, p_amount: -CREDIT_COSTS.TEXT_TO_IMAGE,
-        p_reason: "refund_image_failed", p_meta: {},
-      }).catch(() => {});
+      try {
+  await supabaseAdmin.rpc("deduct_credits", {
+    p_user_id: userId,
+    p_amount: -CREDIT_COSTS.TEXT_TO_IMAGE,
+    p_reason: "refund_image_failed",
+    p_meta: {},
+  });
+} catch {}
     }
     return NextResponse.json({ error: err.message || "Image generation failed" }, { status: 500 });
   }
