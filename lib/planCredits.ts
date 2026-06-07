@@ -1,4 +1,6 @@
 export type PlanId = "starter" | "pro" | "elite";
 export const PLAN_CREDITS: Record<PlanId, number> = {
-  starter: 1600, pro: 2800, elite: 5800,
+  starter: 1400,
+  pro:     5000,
+  elite:   10000,
 };
