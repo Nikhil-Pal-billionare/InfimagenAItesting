@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d]/95 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 h-12">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-            <span className="text-white text-xs font-black">I</span>
+            <img src="https://lrdwqsllipznxajlyyea.supabase.co/storage/v1/object/public/media-uploads/1000055271-removebg-preview.png" alt="logo" className="w-7 h-7 rounded-full object-cover" />
           </div>
           <span className="text-white font-bold text-sm">InfiMagen</span>
         </Link>
