@@ -50,9 +50,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ── DESKTOP SIDEBAR (hidden on mobile) ── */}
       <aside className="hidden md:flex fixed top-0 left-0 h-screen w-[72px] bg-[#0d0d0d] border-r border-white/5 flex-col items-center py-4 z-50">
         <Link href="/dashboard" className="mb-6 flex-shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
-            <span className="text-white text-base font-black">I</span>
-          </div>
+          <img 
+  src="https://lrdwqsllipznxajlyyea.supabase.co/storage/v1/object/public/media-uploads/1000055271-removebg-preview.png" 
+  alt="InfiMagen" 
+  className="w-8 h-8 rounded-full object-cover"
+/>
         </Link>
         <nav className="flex-1 flex flex-col items-center gap-1 w-full px-2">
           {NAV.map((item) => {
