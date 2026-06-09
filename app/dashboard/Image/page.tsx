@@ -218,11 +218,11 @@ function ImageTool() {
               <span className="text-xs bg-violet-500/15 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">Pro</span>
             </div>
           </div>
-          <div className="columns-2 md:columns-3 gap-2 space-y-2">
+          <div className="flex flex-col gap-3">
             {images.map((img, i) => (
               <div key={img.id} onClick={() => handleImageClick(img)}
                 className="break-inside-avoid rounded-xl overflow-hidden relative group cursor-pointer"
-                style={{ aspectRatio: i % 3 === 0 ? "3/4" : i % 3 === 1 ? "1/1" : "4/3" }}>
+                style={{ aspectRatio: "4/3" }}>
                 <img src={img.image_url} alt={img.prompt} className="w-full h-full object-cover min-h-[140px]" loading="lazy" />
 
                 {/* Pro lock */}
