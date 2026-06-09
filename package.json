@@ -23,6 +23,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.0"
+    "@fal-ai/client": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
