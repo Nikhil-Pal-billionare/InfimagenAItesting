@@ -25,6 +25,7 @@ function VideoTool() {
     setError("");
     setClips([]);
     setScenes([]);
+    
 
     try {
       /* 🔥 ORIGINAL API CALL — PRESERVED */
