@@ -189,11 +189,12 @@ export default function ThumbnailPage() {
               <span className="text-xs bg-violet-500/15 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">Pro</span>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="flex flex-col gap-4">
             {templates.map((template) => (
               <div key={template.id} onClick={() => handleTemplateClick(template)}
                 className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/8 hover:border-violet-500/40 transition-all"
-                style={{ aspectRatio: "16/9" }}>
+                style={{ aspectRatio: "16/9", width: "100%" }}
+className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/8 hover:border-violet-500/40 transition-all w-full">
                 <img src={template.image_url} alt={template.title} className="w-full h-full object-cover" />
                 <div className="absolute top-2 right-2">
                   {template.is_free
