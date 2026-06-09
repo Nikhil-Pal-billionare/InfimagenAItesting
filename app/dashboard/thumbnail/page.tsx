@@ -27,7 +27,6 @@ export default function ThumbnailPage() {
 
   useEffect(() => {
     async function load() {
-      // Check paid status
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -38,14 +37,11 @@ export default function ThumbnailPage() {
           .maybeSingle();
         setIsPaid(!!data);
       }
-
-      // Fetch templates from Supabase
       const { data: tmpl } = await supabase
         .from("thumbnail_templates")
         .select("id, title, image_url, prompt, is_free")
         .eq("active", true)
         .order("sort_order", { ascending: true });
-
       setTemplates(tmpl ?? []);
     }
     load();
@@ -53,10 +49,7 @@ export default function ThumbnailPage() {
   }, []);
 
   function handleTemplateClick(template: Template) {
-    if (!template.is_free && !isPaid) {
-      setShowProPopup(true);
-      return;
-    }
+    if (!template.is_free && !isPaid) { setShowProPopup(true); return; }
     setSelectedTemplate(template);
     setShowPromptModal(true);
   }
@@ -107,69 +100,8 @@ export default function ThumbnailPage() {
         <p className="text-sm text-white/30 ml-11">Generate YouTube-ready thumbnails in 16:9</p>
       </div>
 
-      {/* Templates */}
-      {templates.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
-              Templates ({templates.length})
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Free</span>
-              <span className="text-xs bg-violet-500/15 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">Pro</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                onClick={() => handleTemplateClick(template)}
-                className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/8 hover:border-violet-500/40 transition-all"
-                style={{ aspectRatio: "16/9" }}
-              >
-                <img src={template.image_url} alt={template.title} className="w-full h-full object-cover" />
-
-                {/* Badge */}
-                <div className="absolute top-2 right-2">
-                  {template.is_free ? (
-                    <span className="text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full">FREE</span>
-                  ) : (
-                    <span className="text-[9px] font-bold bg-violet-600 text-white px-1.5 py-0.5 rounded-full">PRO</span>
-                  )}
-                </div>
-
-                {/* Lock */}
-                {!template.is_free && !isPaid && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-2xl">🔒</span>
-                  </div>
-                )}
-
-                {/* Hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <span className="text-white text-xs font-bold bg-white/20 backdrop-blur px-3 py-1.5 rounded-lg">
-                    {!template.is_free && !isPaid ? "Upgrade to Pro" : "View Prompt"}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <p className="text-white text-xs font-semibold">{template.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {templates.length === 0 && (
-        <div className="mb-8 bg-white/3 border border-white/8 rounded-2xl p-6 text-center">
-          <p className="text-white/20 text-sm">Koi template nahi hai abhi</p>
-          <p className="text-white/10 text-xs mt-1">Supabase → thumbnail_templates table mein add karo</p>
-        </div>
-      )}
-
-      <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
+      {/* ── Generator + Preview ── */}
+      <div className="grid lg:grid-cols-[1fr_1fr] gap-6 mb-10">
         {/* Left */}
         <div className="space-y-4">
           <div className="bg-[#111] border border-white/8 rounded-2xl overflow-hidden">
@@ -207,7 +139,7 @@ export default function ThumbnailPage() {
           {error && <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">{error}</div>}
         </div>
 
-        {/* Right */}
+        {/* Right — Preview */}
         <div className="space-y-3">
           <p className="text-xs text-white/25 uppercase tracking-wider">Preview (16:9)</p>
           <div className="relative w-full aspect-video bg-[#111] border border-white/8 rounded-2xl overflow-hidden flex items-center justify-center">
@@ -245,6 +177,48 @@ export default function ThumbnailPage() {
         </div>
       </div>
 
+      {/* ── TEMPLATES — NEECHE ── */}
+      {templates.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+              Templates ({templates.length})
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Free</span>
+              <span className="text-xs bg-violet-500/15 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full">Pro</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {templates.map((template) => (
+              <div key={template.id} onClick={() => handleTemplateClick(template)}
+                className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/8 hover:border-violet-500/40 transition-all"
+                style={{ aspectRatio: "16/9" }}>
+                <img src={template.image_url} alt={template.title} className="w-full h-full object-cover" />
+                <div className="absolute top-2 right-2">
+                  {template.is_free
+                    ? <span className="text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full">FREE</span>
+                    : <span className="text-[9px] font-bold bg-violet-600 text-white px-1.5 py-0.5 rounded-full">PRO</span>}
+                </div>
+                {!template.is_free && !isPaid && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="text-2xl">🔒</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <span className="text-white text-xs font-bold bg-white/20 backdrop-blur px-3 py-1.5 rounded-lg">
+                    {!template.is_free && !isPaid ? "Upgrade to Pro" : "View Prompt"}
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                  <p className="text-white text-xs font-semibold">{template.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Pro Popup */}
       {showProPopup && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowProPopup(false)}>
@@ -253,12 +227,8 @@ export default function ThumbnailPage() {
             <h2 className="text-lg font-bold text-white mb-2">Pro Templates</h2>
             <p className="text-sm text-white/50 mb-5">Ye templates sirf paid users ke liye hain. Koi bhi plan lo aur sab templates unlock ho jayenge!</p>
             <div className="space-y-2">
-              <a href="/payment?plan=starter" className="block w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all text-sm">
-                Starter — ₹149 (1,400 credits)
-              </a>
-              <a href="/payment?plan=pro" className="block w-full bg-violet-700/50 hover:bg-violet-600/50 border border-violet-500/30 text-white/80 font-semibold py-3 rounded-xl transition-all text-sm">
-                Pro — ₹499 (5,000 credits)
-              </a>
+              <a href="/payment?plan=starter" className="block w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition-all text-sm">Starter — ₹149 (1,400 credits)</a>
+              <a href="/payment?plan=pro" className="block w-full bg-violet-700/50 hover:bg-violet-600/50 border border-violet-500/30 text-white/80 font-semibold py-3 rounded-xl transition-all text-sm">Pro — ₹499 (5,000 credits)</a>
             </div>
             <button onClick={() => setShowProPopup(false)} className="mt-4 text-xs text-white/25 hover:text-white/50 transition-colors">Maybe later</button>
           </div>
