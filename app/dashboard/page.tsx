@@ -67,7 +67,7 @@ export default function DashboardHome() {
         .from("community_images")
         .select("id, image_url, prompt, title, is_free, likes, uses, copies, total_count")
         .eq("is_public", true).eq("active", true)
-        .order("created_at", { ascending: false })
+        .order("dashboard_order", { ascending: true })
         .limit(20);
       setImages(imgs ?? []);
 
