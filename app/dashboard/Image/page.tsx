@@ -48,7 +48,7 @@ function ImageTool() {
         .from("community_images")
         .select("id, image_url, prompt, title, is_free, likes, total_count")
         .eq("is_public", true).eq("active", true)
-        .order("created_at", { ascending: false })
+        .order("image_page_order", { ascending: true })
         .limit(20);
       setImages(imgs ?? []);
 
