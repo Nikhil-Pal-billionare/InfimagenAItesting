@@ -64,10 +64,12 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     if (userId && deducted) {
-      await supabaseAdmin.rpc("deduct_credits", {
-        p_user_id: userId, p_amount: -CREDIT_COSTS.VIDEO_PLAN,
-        p_reason: "refund_video_failed", p_meta: {},
-      }).catch(() => {});
+      try {
+  await supabaseAdmin.rpc("deduct_credits", {
+    p_user_id: userId, p_amount: -CREDIT_COSTS.VIDEO_PLAN,
+    p_reason: "refund_video_failed", p_meta: {},
+  });
+} catch {}
     }
     return NextResponse.json({ error: err.message || "Video generation failed" }, { status: 500 });
   }
