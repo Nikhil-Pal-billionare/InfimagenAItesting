@@ -21,6 +21,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     })(window, document, "clarity", "script", "wuljhk1k5o");
   `}
        </Script>
+       <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX30ZJHGQN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZX30ZJHGQN');
+</script>
       </body>
     </html>
   );
