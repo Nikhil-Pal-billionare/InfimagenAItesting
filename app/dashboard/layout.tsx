@@ -1,6 +1,6 @@
 "use client";
 
-import OnboardingTour from "@/components/dashboard/OnboardingTour";
+import OnboardingTour from "@/app/dashboard/OnboardingTour";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
