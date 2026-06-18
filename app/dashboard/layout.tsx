@@ -1,6 +1,5 @@
 "use client";
 
-import OnboardingTour from "@/components/dashboard/OnboardingTour";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -356,7 +355,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <OnboardingTour />
       <main className="flex-1 md:ml-[72px] min-h-screen overflow-y-auto pt-12 md:pt-0">
         {children}
       </main>
