@@ -158,8 +158,8 @@ function Hero({ heroBg }: { heroBg: string | null }) {
         {/* Social proof */}
         <div className="mt-12 flex items-center justify-center gap-6 text-sm text-white/20">
           <span>✦ No credit card required</span>
-          <span className="hidden sm:block">✦ 150 free credits daily</span>
-          <span className="hidden sm:block">✦ 50,000+ creators</span>
+          <span className="hidden sm:block">✦ 50 free credits daily</span>
+          <span className="hidden sm:block">✦ 10+ creators</span>
         </div>
       </div>
 
@@ -332,9 +332,9 @@ function Stats() {
     <section className="py-16 px-6 border-y border-white/5">
       <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         {[
-          { num: "50K+",  label: "Creators" },
-          { num: "5M+",   label: "Images Generated" },
-          { num: "150",   label: "Free Credits Daily" },
+          { num: "10+",  label: "Creators" },
+          { num: "50+",   label: "Images Generated" },
+          { num: "50",   label: "Free Credits Daily" },
           { num: "6",     label: "AI Tools" },
         ].map((s) => (
           <div key={s.label}>
@@ -479,7 +479,7 @@ function WaitlistCTA() {
         </div>
 
         <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-          Join 50,000+ creators
+          Joined 10+ creators
         </h2>
         <p className="text-white/30 text-lg mb-10">
           Get early access, exclusive credits, and be first to try every new feature.
