@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabaseClient";
 
 interface Step {
@@ -94,8 +94,8 @@ const STEPS: Step[] = [
   },
   {
     id: "done",
-    title: "You're All Set! ✅",
-    desc: "Tour complete! You're ready to create amazing AI content. Click 'Image Library' to generate your first masterpiece, or explore any tool you like. Happy creating! 🎨",
+    title: "You are All Set! ✅",
+    desc: "Tour complete! You are ready to create amazing AI content. Click Image Library to generate your first masterpiece, or explore any tool you like. Happy creating! 🎨",
     icon: "✅",
     target: null,
   },
@@ -107,11 +107,12 @@ export default function OnboardingTour() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [tooltipPos, setTooltipPos] = useState({ top: "50%", left: "50%" });
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const current = STEPS[step];
 
+  // Check if tour should show
   useEffect(() => {
     async function check() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -125,32 +126,79 @@ export default function OnboardingTour() {
     check();
   }, []);
 
+  // Calculate positions
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (!show) return;
 
-  useEffect(() => {
-    if (!show || !current.target) {
-      setTargetRect(null);
-      return;
-    }
-    const updateRect = () => {
-      const el = document.getElementById(current.target!);
-      if (el) {
-        setTargetRect(el.getBoundingClientRect());
-      } else {
+    function updatePositions() {
+      if (!current.target) {
         setTargetRect(null);
+        setTooltipPos({ top: "50%", left: "50%" });
+        return;
       }
+
+      const el = document.getElementById(current.target);
+      if (!el) {
+        setTargetRect(null);
+        setTooltipPos({ top: "50%", left: "50%" });
+        return;
+      }
+
+      const rect = el.getBoundingClientRect();
+      setTargetRect(rect);
+
+      // Calculate tooltip position
+      const tooltipEl = tooltipRef.current;
+      const tw = tooltipEl?.offsetWidth || 340;
+      const th = tooltipEl?.offsetHeight || 240;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const padding = 16;
+      const gap = 20;
+
+      const pos = current.position || "bottom";
+      let top = 0;
+      let left = 0;
+
+      switch (pos) {
+        case "top":
+          top = rect.top - th - gap;
+          left = rect.left + rect.width / 2 - tw / 2;
+          break;
+        case "bottom":
+          top = rect.bottom + gap;
+          left = rect.left + rect.width / 2 - tw / 2;
+          break;
+        case "left":
+          top = rect.top + rect.height / 2 - th / 2;
+          left = rect.left - tw - gap;
+          break;
+        case "right":
+          top = rect.top + rect.height / 2 - th / 2;
+          left = rect.right + gap;
+          break;
+      }
+
+      if (left < padding) left = padding;
+      if (left + tw > vw - padding) left = vw - tw - padding;
+      if (top < padding) top = padding;
+      if (top + th > vh - padding) top = vh - th - padding;
+
+      setTooltipPos({ top: `${top}px`, left: `${left}px` });
+    }
+
+    const t1 = setTimeout(updatePositions, 100);
+    const t2 = setTimeout(updatePositions, 400);
+    window.addEventListener("resize", updatePositions);
+    window.addEventListener("scroll", updatePositions, true);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("resize", updatePositions);
+      window.removeEventListener("scroll", updatePositions, true);
     };
-    updateRect();
-    const timeout = setTimeout(updateRect, 100);
-    return () => clearTimeout(timeout);
-  }, [show, step, current.target, windowSize]);
+  }, [show, step, current.target, current.position]);
 
   async function finish() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -168,115 +216,164 @@ export default function OnboardingTour() {
     if (step > 0) setStep(step - 1);
   }
 
-  const getTooltipPosition = useCallback(() => {
-    if (!targetRect || !tooltipRef.current) {
-      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-    }
-    const tooltipWidth = tooltipRef.current.offsetWidth || 320;
-    const tooltipHeight = tooltipRef.current.offsetHeight || 200;
-    const padding = 16;
-    const arrowSize = 12;
-    const position = current.position || "bottom";
-    let top = 0, left = 0;
-
-    switch (position) {
-      case "top":
-        top = targetRect.top - tooltipHeight - arrowSize - padding;
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        break;
-      case "bottom":
-        top = targetRect.bottom + arrowSize + padding;
-        left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-        break;
-      case "left":
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        left = targetRect.left - tooltipWidth - arrowSize - padding;
-        break;
-      case "right":
-        top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
-        left = targetRect.right + arrowSize + padding;
-        break;
-    }
-
-    if (left < padding) left = padding;
-    if (left + tooltipWidth > windowSize.width - padding) left = windowSize.width - tooltipWidth - padding;
-    if (top < padding) top = padding;
-    if (top + tooltipHeight > windowSize.height - padding) top = windowSize.height - tooltipHeight - padding;
-
-    return { top: `${top}px`, left: `${left}px`, transform: "none" };
-  }, [targetRect, current.position, windowSize]);
-
-  const getArrowClass = () => {
-    if (!targetRect) return "";
-    const pos = current.position || "bottom";
-    const base = "absolute w-3 h-3 bg-[#111] border rotate-45 ";
-    switch (pos) {
-      case "top": return base + "bottom-[-6px] left-1/2 -translate-x-1/2 border-b border-r border-violet-500/30";
-      case "bottom": return base + "top-[-6px] left-1/2 -translate-x-1/2 border-t border-l border-violet-500/30";
-      case "left": return base + "right-[-6px] top-1/2 -translate-y-1/2 border-t border-r border-violet-500/30";
-      case "right": return base + "left-[-6px] top-1/2 -translate-y-1/2 border-b border-l border-violet-500/30";
-    }
-  };
-
   if (loading || !show) return null;
 
-  const tooltipStyle = getTooltipPosition();
   const hasTarget = !!current.target && !!targetRect;
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1920;
+  const vh = typeof window !== "undefined" ? window.innerHeight : 1080;
+
+  // Spotlight padding around target
+  const spotPadding = 8;
+  const spotX = hasTarget ? targetRect!.left - spotPadding : 0;
+  const spotY = hasTarget ? targetRect!.top - spotPadding : 0;
+  const spotW = hasTarget ? targetRect!.width + spotPadding * 2 : 0;
+  const spotH = hasTarget ? targetRect!.height + spotPadding * 2 : 0;
+  const spotR = 16; // border radius
 
   return (
-    <>
-      <div className="fixed inset-0 z-[100]">
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-300" onClick={finish} />
-        {hasTarget && (
-          <>
-            <div className="absolute bg-black/75 backdrop-blur-sm" style={{ top: 0, left: 0, right: 0, height: `${targetRect.top}px` }} />
-            <div className="absolute bg-black/75 backdrop-blur-sm" style={{ top: `${targetRect.bottom}px`, left: 0, right: 0, bottom: 0 }} />
-            <div className="absolute bg-black/75 backdrop-blur-sm" style={{ top: `${targetRect.top}px`, left: 0, width: `${targetRect.left}px`, height: `${targetRect.height}px` }} />
-            <div className="absolute bg-black/75 backdrop-blur-sm" style={{ top: `${targetRect.top}px`, left: `${targetRect.right}px`, right: 0, height: `${targetRect.height}px` }} />
-            <div className="absolute pointer-events-none z-[101]" style={{
-              top: `${targetRect.top - 4}px`, left: `${targetRect.left - 4}px`,
-              width: `${targetRect.width + 8}px`, height: `${targetRect.height + 8}px`,
-              borderRadius: "12px",
-              boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.6), 0 0 20px 4px rgba(139, 92, 246, 0.3)",
-              animation: "tour-pulse 2s ease-in-out infinite",
-            }} />
-          </>
-        )}
-      </div>
+    <div className="fixed inset-0" style={{ zIndex: 99999 }}>
+      {/* SVG Overlay with Mask for Spotlight */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        style={{ pointerEvents: hasTarget ? "none" : "auto" }}
+      >
+        <defs>
+          <mask id="tour-mask">
+            <rect x="0" y="0" width={vw} height={vh} fill="white" />
+            {hasTarget && (
+              <rect
+                x={spotX}
+                y={spotY}
+                width={spotW}
+                height={spotH}
+                rx={spotR}
+                ry={spotR}
+                fill="black"
+              />
+            )}
+          </mask>
+        </defs>
+        <rect
+          x="0"
+          y="0"
+          width={vw}
+          height={vh}
+          fill="rgba(0,0,0,0.75)"
+          mask="url(#tour-mask)"
+          onClick={finish}
+          style={{ pointerEvents: "auto", cursor: "default" }}
+        />
+      </svg>
 
-      <div ref={tooltipRef} className="fixed z-[102] pointer-events-auto" style={tooltipStyle}>
-        <div className="relative bg-[#111] border border-violet-500/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl shadow-violet-500/10">
-          {hasTarget && <div className={getArrowClass()} />}
-          <div className="flex items-center justify-center gap-1.5 mb-5">
+      {/* Glowing border around target */}
+      {hasTarget && (
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            top: spotY,
+            left: spotX,
+            width: spotW,
+            height: spotH,
+            borderRadius: spotR,
+            border: "3px solid #8b5cf6",
+            boxShadow: "0 0 0 4px rgba(139,92,246,0.3), 0 0 30px 8px rgba(139,92,246,0.5), inset 0 0 20px rgba(139,92,246,0.1)",
+            animation: "tourPulse 2s ease-in-out infinite",
+            zIndex: 100000,
+          }}
+        />
+      )}
+
+      {/* Tooltip */}
+      <div
+        ref={tooltipRef}
+        className="absolute"
+        style={{
+          top: tooltipPos.top,
+          left: tooltipPos.left,
+          width: "340px",
+          maxWidth: "calc(100vw - 32px)",
+          pointerEvents: "auto",
+          zIndex: 100001,
+          transform: tooltipPos.top === "50%" ? "translate(-50%, -50%)" : "none",
+        }}
+      >
+        <div className="relative bg-[#111] border border-violet-500/40 rounded-2xl p-6 shadow-2xl shadow-violet-500/10">
+          {/* Arrow pointing to target */}
+          {hasTarget && (
+            <div
+              className="absolute w-3 h-3 bg-[#111] border rotate-45"
+              style={{
+                ...(current.position === "right" && { left: "-7px", top: "50%", marginTop: "-6px", borderRight: "none", borderTop: "none", borderColor: "rgba(139,92,246,0.4)" }),
+                ...(current.position === "left" && { right: "-7px", top: "50%", marginTop: "-6px", borderLeft: "none", borderBottom: "none", borderColor: "rgba(139,92,246,0.4)" }),
+                ...(current.position === "bottom" && { top: "-7px", left: "50%", marginLeft: "-6px", borderLeft: "none", borderBottom: "none", borderColor: "rgba(139,92,246,0.4)" }),
+                ...(current.position === "top" && { bottom: "-7px", left: "50%", marginLeft: "-6px", borderRight: "none", borderTop: "none", borderColor: "rgba(139,92,246,0.4)" }),
+                ...(current.position === undefined && { display: "none" }),
+              }}
+            />
+          )}
+
+          {/* Progress dots */}
+          <div className="flex items-center justify-center gap-1.5 mb-4">
             {STEPS.map((_, i) => (
-              <div key={i} className={`rounded-full transition-all duration-300 ${i === step ? "w-6 h-1.5 bg-violet-500" : i < step ? "w-1.5 h-1.5 bg-violet-500/40" : "w-1.5 h-1.5 bg-white/10"}`} />
+              <div
+                key={i}
+                className={`rounded-full transition-all duration-300 ${
+                  i === step
+                    ? "w-6 h-1.5 bg-violet-500"
+                    : i < step
+                    ? "w-1.5 h-1.5 bg-violet-500/40"
+                    : "w-1.5 h-1.5 bg-white/10"
+                }`}
+              />
             ))}
           </div>
-          <div className="text-center text-[10px] text-white/20 mb-3 font-medium uppercase tracking-wider">Step {step + 1} of {STEPS.length}</div>
+
+          {/* Step counter */}
+          <div className="text-center text-[10px] text-white/30 mb-3 font-medium uppercase tracking-wider">
+            Step {step + 1} of {STEPS.length}
+          </div>
+
+          {/* Icon */}
           <div className="text-5xl text-center mb-4">{current.icon}</div>
-          <h2 className="text-lg font-bold text-white text-center mb-3">{current.title}</h2>
-          <p className="text-sm text-white/50 text-center leading-relaxed mb-6">{current.desc}</p>
+
+          {/* Content */}
+          <h2 className="text-lg font-bold text-white text-center mb-3">
+            {current.title}
+          </h2>
+          <p className="text-sm text-white/60 text-center leading-relaxed mb-6">
+            {current.desc}
+          </p>
+
+          {/* Buttons */}
           <div className="flex gap-2">
             {step > 0 && (
-              <button onClick={prev} className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all">← Back</button>
+              <button
+                onClick={prev}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+              >
+                Back
+              </button>
             )}
-            <button onClick={next} className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-lg shadow-violet-600/20">
-              {step === STEPS.length - 1 ? "Start Creating! 🚀" : "Next →"}
+            <button
+              onClick={next}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-violet-600 hover:bg-violet-500 text-white transition-all"
+            >
+              {step === STEPS.length - 1 ? "Start Creating!" : "Next"}
             </button>
           </div>
+
+          {/* Skip */}
           {step < STEPS.length - 1 && (
-            <button onClick={finish} className="w-full mt-3 text-xs text-white/20 hover:text-white/40 transition-colors">Skip tour</button>
+            <button
+              onClick={finish}
+              className="w-full mt-3 text-xs text-white/20 hover:text-white/50 transition-colors"
+            >
+              Skip tour
+            </button>
           )}
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes tour-pulse {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.6), 0 0 20px 4px rgba(139, 92, 246, 0.3); }
-          50% { box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.8), 0 0 30px 8px rgba(139, 92, 246, 0.5); }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }
 
